@@ -1,0 +1,69 @@
+<!-- Logback configuration. See http://logback.qos.ch/manual/index.html -->
+<configuration scan="true" scanPeriod="10 seconds">
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
+
+    <appender name="INFO_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/privilege_info.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <FileNamePattern>${LOG_PATH}/privilege_info-demo.%d{yyyy-MM-dd}.log
+            </FileNamePattern>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36}-%msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="ERROR_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <File>${LOG_PATH}/privilege_error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <FileNamePattern>${LOG_PATH}/privilege_error-demo.%d{yyyy-MM-dd}.log
+            </FileNamePattern>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36}-%msg%n</Pattern>
+        </layout>
+    </appender>
+    <!--logback日志写入rabbitmq -->
+    <appender name="RabbitMq"
+              class="org.springframework.amqp.rabbit.logback.AmqpAppender">
+        <layout>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36}-%msg%n</Pattern>
+<!--            <pattern><![CDATA[ %d %p %t [%c] - <%m>%n ]]></pattern>-->
+        </layout>
+        <!--rabbitmq地址 -->
+        <addresses>192.168.1.129:5672</addresses>
+        <abbreviation>36</abbreviation>
+        <includeCallerData>true</includeCallerData>
+        <applicationId>info</applicationId>
+        <username>admin</username>
+        <password>admin</password>
+        <declareExchange>false</declareExchange>
+        <exchangeType>direct</exchangeType>
+        <exchangeName>rabbit.log</exchangeName>
+        <routingKeyPattern>info</routingKeyPattern>
+        <generateId>true</generateId>
+        <charset>UTF-8</charset>
+        <durable>true</durable>
+        <deliveryMode>NON_PERSISTENT</deliveryMode>
+        <declareExchange>true</declareExchange>
+        <autoDelete>false</autoDelete>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="INFO_FILE" />
+        <appender-ref ref="ERROR_FILE" />
+        <appender-ref ref="RabbitMq" />
+    </root>
+
+</configuration>
